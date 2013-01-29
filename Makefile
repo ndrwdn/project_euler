@@ -13,18 +13,27 @@ define cc-command
 $(CC) $(CFLAGS)
 endef
 
+define cc-exec-command
+$(cc-command) $^ -o $@
+endef
+
 define cc-object-command
 $(cc-command) $< -c -o $@
 endef
 
 define cc-test-command
-$(cc-command) $(UNITY_SRC) $^ -o $@
+$(cc-exec-command) $(UNITY_SRC)
 endef
 
 clean:
 	rm -f build/*
 	rm -f test/*_runner.c
 
+build/generate_problem: src/generate_problem.c
+	$(cc-exec-command)
+
+generate_problem: build/generate_problem
+	$<
 
 test/problem_0001_runner.c: test/problem_0001_test.c
 	$(generate-test-runner)
