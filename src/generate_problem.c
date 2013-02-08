@@ -42,6 +42,10 @@ char *get_problem_id(int problem_number) {
     return problem_id;
 }
 
+void destroy_problem_id(char *problem_id) {
+    free(problem_id);
+}
+
 int get_position_from_line(FILE *make_file, char *line) {
     int position_of_line = ftell(make_file);
     int length_of_line = strlen(line);
@@ -50,22 +54,26 @@ int get_position_from_line(FILE *make_file, char *line) {
     return position_of_line - length_of_line - new_line;
 }
 
-int find_position(file_object *make_file, int problem_number) {
+int find_position(file_object *make_file, int problem_number, char *problem_id) {
     char line_buffer[MAX_BUFF];
     int position = 0;
     char *next_problem = get_problem_id(problem_number + 1);
 
     while (fgets(line_buffer, MAX_BUFF, make_file->fp) != NULL) {
+        if (strstr(line_buffer, problem_id)) {
+            position = -1;
+            break;
+        }
         if (strstr(line_buffer, next_problem)) {
             position = get_position_from_line(make_file->fp, line_buffer);
             break;
         }
     }
-    free(next_problem);
+    destroy_problem_id(next_problem);
 
     if (position == 0) {
         position = ftell(make_file->fp);
-    } else {
+    } else if (position > 0) {
         position -= 1;
         fseek(make_file->fp, position, SEEK_SET);
     }
@@ -126,9 +134,17 @@ void move_file(file_object *from, file_object *to) {
     remove(from->name);
 }
 
-void add_problem_to_make_file(file_object *make_file, int problem_number, char *problem_id) {
-    // TODO: check for prior existence of problem in Makefile.
-    int position = find_position(make_file, problem_number);
+void add_problem_to_make_file(int problem_number, char *problem_id) {
+    file_object *make_file = create_file("Makefile", "r+");
+    open_file(make_file);
+
+    int position = find_position(make_file, problem_number, problem_id);
+
+    if (position == -1) {
+        printf("Problem problem_%s already exists in Makefile, not re-adding.\n", problem_id);
+        return;
+    }
+
     printf("Adding problem_%s to Makefile.\n", problem_id);
 
     file_object *new_make_file = create_new_make_file();
@@ -144,6 +160,10 @@ void add_problem_to_make_file(file_object *make_file, int problem_number, char *
     }
 
     move_file(new_make_file, make_file);
+    destroy_file_object(new_make_file);
+
+    close_file(make_file);
+    destroy_file_object(make_file);
 }
 
 char *create_file_name(char *prefix, char *problem_id, char *extension) {
@@ -154,9 +174,27 @@ char *create_file_name(char *prefix, char *problem_id, char *extension) {
     return file_name;
 }
 
+void destroy_file_name(char *file_name) {
+    free(file_name);
+}
+
+int file_already_exists(char *type, char *file_name) {
+    if (access(file_name, F_OK) != 0) {
+        return 0;
+    }
+
+    printf("%s file %s already exists, not re-creating.\n", type, file_name);
+
+    return 1;
+}
+
 void create_include_file(char *problem_id) {
-    // TODO: Check for prior existence of include file.
     char *include_file_name = create_file_name("include/problem_", problem_id, ".h");
+
+    if (file_already_exists("Include", include_file_name)) {
+        goto out1;
+    }
+
     printf("Creating include file: %s.\n", include_file_name);
 
     file_object *include_file = create_file(include_file_name, "w");
@@ -169,12 +207,18 @@ void create_include_file(char *problem_id) {
 
     close_file(include_file);
     destroy_file_object(include_file);
-    free(include_file_name);
+
+out1:
+    destroy_file_name(include_file_name);
 }
 
 void create_source_file(char *problem_id) {
-    // TODO: Check for prior existence of source file.
     char *source_file_name = create_file_name("src/problem_", problem_id, ".c");
+
+    if (file_already_exists("Source", source_file_name)) {
+        goto out1;
+    }
+
     printf("Creating source file: %s.\n", source_file_name);
 
     file_object *source_file = create_file(source_file_name, "w");
@@ -187,12 +231,18 @@ void create_source_file(char *problem_id) {
 
     close_file(source_file);
     destroy_file_object(source_file);
-    free(source_file_name);
+
+out1:
+    destroy_file_name(source_file_name);
 }
 
 void create_test_file(char *problem_id) {
-    // TODO: Check for prior existence of test file.
     char *test_file_name = create_file_name("test/problem_", problem_id, "_test.c");
+
+    if (file_already_exists("Test", test_file_name)) {
+        goto out1;
+    }
+
     printf("Creating test file: %s.\n", test_file_name);
 
     file_object *test_file = create_file(test_file_name, "w");
@@ -207,33 +257,26 @@ void create_test_file(char *problem_id) {
 
     close_file(test_file);
     destroy_file_object(test_file);
-    free(test_file_name);
+
+out1:
+    destroy_file_name(test_file_name);
 }
 
-void add_problem(file_object *make_file, int problem_number) {
+void add_problem(int problem_number) {
     char *problem_id = get_problem_id(problem_number);
 
-    add_problem_to_make_file(make_file, problem_number, problem_id);
+    add_problem_to_make_file(problem_number, problem_id);
 
     create_include_file(problem_id);
     create_source_file(problem_id);
     create_test_file(problem_id);
 
-    free(problem_id);
+    destroy_problem_id(problem_id);
 }
 
 int main(int argc, char *argv[]) {
-    file_object *make_file = create_file("Makefile", "r+");
-
-    if (!open_file(make_file))
-        return 1;
-
     int problem_number = 2;
-
-    add_problem(make_file, problem_number);
-
-    close_file(make_file);
-    destroy_file_object(make_file);
+    add_problem(problem_number);
 
     return 0;
 }
