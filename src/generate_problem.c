@@ -32,10 +32,6 @@ void destroy_file_object(file_object *file) {
 }
 
 char *get_problem_id(int problem_number) {
-    if (problem_number < 1 || problem_number > 9999) {
-        return NULL;
-    }
-
     char *problem_id = malloc(5 * sizeof(char));
     snprintf(problem_id, 5, "%04d", problem_number);
 
@@ -274,9 +270,32 @@ void add_problem(int problem_number) {
     destroy_problem_id(problem_id);
 }
 
+void print_usage(char *name) {
+    printf("Usage: %s <problem number>\n", name);
+}
+
+int get_problem_number(int argc, char *argv[]) {
+    if (argc != 2) {
+        print_usage(argv[0]);
+        return 0;
+    }
+
+    int problem_number = atoi(argv[1]);
+
+    if (problem_number < 1 || problem_number > 9998) {
+        printf("Invalid problem number: %d\n", problem_number);
+        return 0;
+    }
+
+    return problem_number;
+}
+
 int main(int argc, char *argv[]) {
-    int problem_number = 2;
-    add_problem(problem_number);
+    int problem_number = get_problem_number(argc, argv);
+
+    if (problem_number > 0) {
+        add_problem(problem_number);
+    }
 
     return 0;
 }

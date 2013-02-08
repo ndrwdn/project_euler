@@ -33,7 +33,7 @@ build/generate_problem: src/generate_problem.c
 	$(cc-exec-command)
 
 generate_problem: build/generate_problem
-	$<
+	$< $(NUM)
 
 
 test/problem_0001_runner.c: test/problem_0001_test.c
