@@ -47,3 +47,16 @@ build/problem_0001_test: build/problem_0001.o test/problem_0001_test.c test/prob
 
 problem_0001: build/problem_0001_test
 	$<
+
+
+test/problem_0002_runner.c: test/problem_0002_test.c
+	$(generate-test-runner)
+
+build/problem_0002.o: src/problem_0002.c include/problem_0002.h
+	$(cc-object-command)
+
+build/problem_0002_test: build/problem_0002.o test/problem_0002_test.c test/problem_0002_runner.c
+	$(cc-test-command)
+
+problem_0002: build/problem_0002_test
+	$<
