@@ -35,6 +35,7 @@ build/generate_problem: src/generate_problem.c
 generate_problem: build/generate_problem
 	$<
 
+
 test/problem_0001_runner.c: test/problem_0001_test.c
 	$(generate-test-runner)
 
