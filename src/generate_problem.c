@@ -27,7 +27,7 @@ void close_file(file_object *file) {
     fclose(file->fp);
 }
 
-void destroy_file(file_object *file) {
+void destroy_file_object(file_object *file) {
     free(file);
 }
 
@@ -127,6 +127,7 @@ void move_file(file_object *from, file_object *to) {
 }
 
 void add_problem_to_make_file(file_object *make_file, int problem_number, char *problem_id) {
+    // TODO: check for prior existence of problem in Makefile.
     int position = find_position(make_file, problem_number);
     printf("Adding problem_%s to Makefile.\n", problem_id);
 
@@ -145,10 +146,79 @@ void add_problem_to_make_file(file_object *make_file, int problem_number, char *
     move_file(new_make_file, make_file);
 }
 
+char *create_file_name(char *prefix, char *problem_id, char *extension) {
+    int file_name_length = strlen(prefix) + strlen(problem_id) + strlen(extension) + 1;
+    char *file_name = malloc(file_name_length);
+
+    snprintf(file_name, file_name_length, "%s%s%s", prefix, problem_id, extension);
+    return file_name;
+}
+
+void create_include_file(char *problem_id) {
+    // TODO: Check for prior existence of include file.
+    char *include_file_name = create_file_name("include/problem_", problem_id, ".h");
+    printf("Creating include file: %s.\n", include_file_name);
+
+    file_object *include_file = create_file(include_file_name, "w");
+    open_file(include_file);
+
+    fprintf(include_file->fp, "#ifndef PROBLEM_%s_H\n", problem_id);
+    fprintf(include_file->fp, "#define PROBLEM_%s_H\n\n", problem_id);
+    fprintf(include_file->fp, "int problem_%s();\n\n", problem_id);
+    fprintf(include_file->fp, "#endif\n");
+
+    close_file(include_file);
+    destroy_file_object(include_file);
+    free(include_file_name);
+}
+
+void create_source_file(char *problem_id) {
+    // TODO: Check for prior existence of source file.
+    char *source_file_name = create_file_name("src/problem_", problem_id, ".c");
+    printf("Creating source file: %s.\n", source_file_name);
+
+    file_object *source_file = create_file(source_file_name, "w");
+    open_file(source_file);
+
+    fprintf(source_file->fp, "#include \"../include/problem_%s.h\"\n\n", problem_id);
+    fprintf(source_file->fp, "int problem_%s() {\n", problem_id);
+    fprintf(source_file->fp, "    return 0;\n");
+    fprintf(source_file->fp, "}\n");
+
+    close_file(source_file);
+    destroy_file_object(source_file);
+    free(source_file_name);
+}
+
+void create_test_file(char *problem_id) {
+    // TODO: Check for prior existence of test file.
+    char *test_file_name = create_file_name("test/problem_", problem_id, "_test.c");
+    printf("Creating test file: %s.\n", test_file_name);
+
+    file_object *test_file = create_file(test_file_name, "w");
+    open_file(test_file);
+
+    fprintf(test_file->fp, "#include \"unity.h\"\n");
+    fprintf(test_file->fp, "#include \"../include/problem_%s.h\"\n\n", problem_id);
+    fprintf(test_file->fp, "void setUp() {\n");
+    fprintf(test_file->fp, "}\n\n");
+    fprintf(test_file->fp, "void tearDown() {\n");
+    fprintf(test_file->fp, "}\n");
+
+    close_file(test_file);
+    destroy_file_object(test_file);
+    free(test_file_name);
+}
+
 void add_problem(file_object *make_file, int problem_number) {
     char *problem_id = get_problem_id(problem_number);
 
     add_problem_to_make_file(make_file, problem_number, problem_id);
+
+    create_include_file(problem_id);
+    create_source_file(problem_id);
+    create_test_file(problem_id);
+
     free(problem_id);
 }
 
@@ -163,7 +233,7 @@ int main(int argc, char *argv[]) {
     add_problem(make_file, problem_number);
 
     close_file(make_file);
-    destroy_file(make_file);
+    destroy_file_object(make_file);
 
     return 0;
 }
