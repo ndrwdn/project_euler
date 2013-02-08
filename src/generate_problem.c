@@ -65,6 +65,9 @@ int find_position(file_object *make_file, int problem_number) {
 
     if (position == 0) {
         position = ftell(make_file->fp);
+    } else {
+        position -= 1;
+        fseek(make_file->fp, position, SEEK_SET);
     }
 
     return position;
@@ -123,7 +126,8 @@ void move_file(file_object *from, file_object *to) {
     remove(from->name);
 }
 
-void add_problem_to_make_file(file_object *make_file, int position, char *problem_id) {
+void add_problem_to_make_file(file_object *make_file, int problem_number, char *problem_id) {
+    int position = find_position(make_file, problem_number);
     printf("Adding problem_%s to Makefile.\n", problem_id);
 
     file_object *new_make_file = create_new_make_file();
@@ -132,20 +136,19 @@ void add_problem_to_make_file(file_object *make_file, int position, char *proble
     int added = 0;
     rewind(make_file->fp);
     while (fgets(line_buffer, MAX_BUFF, make_file->fp) != NULL) {
+        fprintf(new_make_file->fp, "%s", line_buffer);
         if (is_new_problem_position(make_file, position, &added)) {
             add_new_problem(new_make_file->fp, problem_id);
         }
-        fprintf(new_make_file->fp, "%s", line_buffer);
     }
 
     move_file(new_make_file, make_file);
 }
 
 void add_problem(file_object *make_file, int problem_number) {
-    int position = find_position(make_file, problem_number);
     char *problem_id = get_problem_id(problem_number);
 
-    add_problem_to_make_file(make_file, position, problem_id);
+    add_problem_to_make_file(make_file, problem_number, problem_id);
     free(problem_id);
 }
 
