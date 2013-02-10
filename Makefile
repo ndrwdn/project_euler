@@ -64,3 +64,16 @@ build/problem_0002_test: build/problem_0002.o build/arraylist.o test/problem_000
 
 problem_0002: build/problem_0002_test
 	$<
+
+
+test/problem_0003_runner.c: test/problem_0003_test.c
+	$(generate-test-runner)
+
+build/problem_0003.o: src/problem_0003.c include/problem_0003.h
+	$(cc-object-command)
+
+build/problem_0003_test: build/problem_0003.o test/problem_0003_test.c test/problem_0003_runner.c
+	$(cc-test-command)
+
+problem_0003: build/problem_0003_test
+	$<
