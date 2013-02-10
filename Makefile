@@ -36,6 +36,10 @@ generate_problem: build/generate_problem
 	$< $(NUM)
 
 
+build/arraylist.o: src/arraylist.c include/arraylist.h
+	$(cc-object-command)
+
+
 test/problem_0001_runner.c: test/problem_0001_test.c
 	$(generate-test-runner)
 
@@ -55,7 +59,7 @@ test/problem_0002_runner.c: test/problem_0002_test.c
 build/problem_0002.o: src/problem_0002.c include/problem_0002.h
 	$(cc-object-command)
 
-build/problem_0002_test: build/problem_0002.o test/problem_0002_test.c test/problem_0002_runner.c
+build/problem_0002_test: build/problem_0002.o build/arraylist.o test/problem_0002_test.c test/problem_0002_runner.c
 	$(cc-test-command)
 
 problem_0002: build/problem_0002_test
