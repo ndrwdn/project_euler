@@ -3,7 +3,7 @@ UNITY_SRC=$(UNITY_PATH)/src/unity.c
 UNITY_RUNNER=$(UNITY_PATH)/auto/generate_test_runner.rb
 
 CC=gcc
-CFLAGS=-Wall -I$(UNITY_PATH)/src
+CFLAGS=-Wall -I$(UNITY_PATH)/src -ggdb
 
 define generate-test-runner
 ruby $(UNITY_RUNNER) $< $@
@@ -72,8 +72,8 @@ test/problem_0003_runner.c: test/problem_0003_test.c
 build/problem_0003.o: src/problem_0003.c include/problem_0003.h
 	$(cc-object-command)
 
-build/problem_0003_test: build/problem_0003.o test/problem_0003_test.c test/problem_0003_runner.c
-	$(cc-test-command)
+build/problem_0003_test: build/problem_0003.o build/arraylist.o test/problem_0003_test.c test/problem_0003_runner.c
+	$(cc-test-command) -lm
 
 problem_0003: build/problem_0003_test
 	$<
