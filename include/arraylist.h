@@ -2,7 +2,7 @@
 #define ARRAYLIST_H
 
 typedef struct arraylist {
-    int index;
+    int size;
     int max_size;
     int *list;
 } arraylist;

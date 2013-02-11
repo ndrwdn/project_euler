@@ -8,7 +8,7 @@ arraylist *fibonacci_up_to(int maximum) {
 
     int current_term = 2;
     while (current_term <= maximum) {
-        current_term = list->list[list->index - 2] + list->list[list->index - 1];
+        current_term = list->list[list->size - 2] + list->list[list->size - 1];
         add_arraylist(list, current_term);
     }
 
@@ -21,7 +21,7 @@ int problem_0002(int maximum) {
     int sum = 0;
     int i;
 
-    for (i = 0; i < fibs->index; i++) {
+    for (i = 0; i < fibs->size; i++) {
         int fib = fibs->list[i];
         if (fib % 2 == 0) {
             sum += fib;

@@ -5,7 +5,7 @@
 
 arraylist *create_arraylist() {
     arraylist *list = malloc(sizeof(arraylist));
-    list->index = 0;
+    list->size = 0;
     list->max_size = DEFAULT_ARRAYLIST_SIZE;
     list->list = malloc(sizeof(int) * list->max_size);
     return list;
@@ -16,7 +16,7 @@ void expand_arraylist(arraylist *list) {
     int *new_list = malloc(sizeof(int) * list->max_size);
 
     int i;
-    for (i = 0; i < list->index; i++) {
+    for (i = 0; i < list->size; i++) {
         new_list[i] = list->list[i];
     }
 
@@ -25,12 +25,12 @@ void expand_arraylist(arraylist *list) {
 }
 
 void add_arraylist(arraylist *list, int value) {
-    if (list->index >= list->max_size) {
+    if (list->size >= list->max_size) {
         expand_arraylist(list);
     }
 
-    list->list[list->index] = value;
-    list->index++;
+    list->list[list->size] = value;
+    list->size++;
 }
 
 void destroy_arraylist(arraylist *list) {
