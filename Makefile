@@ -77,3 +77,16 @@ build/problem_0003_test: build/problem_0003.o build/arraylist.o test/problem_000
 
 problem_0003: build/problem_0003_test
 	$<
+
+
+test/problem_0004_runner.c: test/problem_0004_test.c
+	$(generate-test-runner)
+
+build/problem_0004.o: src/problem_0004.c include/problem_0004.h
+	$(cc-object-command)
+
+build/problem_0004_test: build/problem_0004.o test/problem_0004_test.c test/problem_0004_runner.c
+	$(cc-test-command)
+
+problem_0004: build/problem_0004_test
+	$<
